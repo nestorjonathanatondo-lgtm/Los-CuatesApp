@@ -422,5 +422,29 @@ window.onload=()=>{
   if(!currentUser) setTimeout(()=>{document.getElementById('loginModal').style.display='flex';},3000);
 };
 </script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAiSTbVdWROpg_S00O6o8l-xoWw26X7wHo",
+    authDomain: "los-cuatesapp.firebaseapp.com",
+    projectId: "los-cuatesapp",
+    storageBucket: "los-cuatesapp.firebasestorage.app",
+    messagingSenderId: "951809994518",
+    appId: "1:951809994518:web:604b7e63f3cb53de84ea37"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  // lo hago global para que tus funciones viejas confirmOrder, etc lo puedan usar
+  window.db = db;
+  window.auth = auth;
+</script>
+
 </body>
 </html>
