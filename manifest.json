@@ -1,0 +1,15 @@
+{
+  "name": "LOS CUATES v6 PRO - Tamales",
+  "short_name": "LosCuates",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FFFCF2",
+  "theme_color": "#1E2F5E",
+  "icons": [
+    {
+      "src": "los_cuates_logo.webp",
+      "sizes": "512x512",
+      "type": "image/webp"
+    }
+  ]
+}

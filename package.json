@@ -1,0 +1,7 @@
+{
+  "name": "los-cuates-v6-pro",
+  "version": "6.0.0",
+  "scripts": {
+    "build": "echo build"
+  }
+}

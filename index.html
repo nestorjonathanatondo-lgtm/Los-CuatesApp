@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>LOS CUATES - Tamales v6 PRO</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1E2F5E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="los_cuates_logo.webp">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&family=Plus+Jakarta+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{--marfil:#FFFCF2;--crema:#E9E0C9;--azul:#1E2F5E;--dorado:#B9975B}
+#splash{position:fixed;inset:0;z-index:999999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:50px 20px 70px;transition:opacity .6s ease}
+#splash.hide{opacity:0;pointer-events:none}
+#splash-cuates{width:130px;height:130px;object-fit:contain;border-radius:20px;background:#fff;padding:6px}
+#splash-bar{width:200px;height:3px;background:rgba(255,255,255,.15);border-radius:999px;overflow:hidden}
+#splash-progress{height:100%;width:0%;background:linear-gradient(90deg,#B9975B,#fff,#B9975B);background-size:200% 100%;animation:shimmer 1s linear infinite;transition:width .2s linear}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+#splash-jm{width:110px;height:110px;object-fit:contain}
+#splash-design{font-family:'Cormorant Garamond';color:#fff;letter-spacing:.38em;font-size:15px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--marfil);overflow-x:hidden}
+#sarape{position:fixed;inset:0;z-index:-2;opacity:.11;background-image:url('sarape.webp');background-size:420px;pointer-events:none}
+#watermark{position:fixed;inset:0;z-index:-1;opacity:.05;background-image:url('los_cuates_logo.webp');background-position:center 18%;background-size:65%;background-repeat:no-repeat;pointer-events:none}
+.container{max-width:480px;margin:0 auto;padding:20px 16px 120px;position:relative;z-index:1}
+.header{text-align:center;padding:18px 0 10px}
+.logo{width:210px;border-radius:22px;border:1px solid var(--crema);background:#fff}
+.brand{font-family:'Cormorant Garamond';font-size:56px;font-weight:700;color:var(--azul);line-height:.9;margin-top:12px}
+.sub{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#6B7A4F;margin-top:8px}
+.badge-wa{display:inline-block;margin-top:10px;background:var(--azul);color:#fff;padding:6px 14px;border-radius:999px;font-size:11px}
+.card{background:#fff;border:1px solid var(--crema);border-radius:26px;padding:20px;margin-top:18px;box-shadow:0 10px 30px rgba(0,0,0,.05)}
+.card-title{font-family:'Cormorant Garamond';font-size:26px;color:var(--azul);font-weight:700}
+#map{height:300px;border-radius:16px;margin-top:12px;border:1px solid var(--crema)}
+/* NEUMORFISMO */
+.btn{width:100%;padding:13px;border-radius:999px;border:none;font-weight:600;cursor:pointer;transition:all .2s ease;position:relative}
+.btn-primary{background:var(--azul);color:#fff;box-shadow:6px 6px 12px rgba(0,0,0,0.15), -3px -3px 8px rgba(255,255,255,0.7), inset 1px 1px 2px rgba(255,255,255,0.2)}
+.btn-primary:active{box-shadow:inset 4px 4px 8px rgba(0,0,0,0.3), inset -2px -2px 4px rgba(255,255,255,0.1);transform:scale(0.98)}
+.btn-outline{background:#fff;border:1px solid var(--crema);color:var(--azul);padding:11px;font-size:12px;box-shadow:4px 4px 10px rgba(0,0,0,0.08), -2px -2px 6px rgba(255,255,255,0.9), inset 1px 1px 1px rgba(255,255,255,0.8)}
+.btn-outline:active{box-shadow:inset 3px 3px 6px rgba(0,0,0,0.1);transform:scale(0.98)}
+.qty-btn{width:38px;height:38px;border-radius:999px;border:1px solid var(--crema);background:#fff;cursor:pointer;font-size:18px;box-shadow:3px 3px 6px rgba(0,0,0,0.08), -2px -2px 4px rgba(255,255,255,0.9)}
+.policy{margin-top:16px;background:linear-gradient(180deg,#FFFCF2,#FFF8E8);border:1px solid var(--crema);border-radius:18px;padding:14px}
+.policy h4{font-family:'Cormorant Garamond';font-size:16px;color:var(--azul);margin-bottom:10px}
+.policy-item{display:flex;gap:8px;margin-bottom:10px}
+.policy-text{font-size:11.5px;color:#5A4F3E;line-height:1.5}
+.policy-highlight{font-weight:700;color:var(--azul)}
+.delivery-info{margin-top:12px;padding:10px;background:#EEF2FF;border-radius:12px;border:1px solid #D6DEFF;display:none}
+.menu-item{display:flex;justify-content:space-between;align-items:center;padding:20px 0;border-bottom:1px solid #F5EEDD}
+.menu-name{font-family:'Cormorant Garamond';font-size:26px;font-weight:600;color:var(--azul)}
+.price{font-family:'Cormorant Garamond';font-size:26px;color:#000;font-weight:700}
+.input{width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--crema);margin-top:6px;background:#fff;box-shadow:inset 2px 2px 4px rgba(0,0,0,0.05)}
+.cart{position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;background:rgba(255,252,242,.96);backdrop-filter:blur(10px);border-top:1px solid var(--crema);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;z-index:10}
+.qr-box{margin-top:12px;padding:14px;background:#FFFEFB;border:1px dashed var(--crema);border-radius:18px;text-align:center}
+.qr-cool{margin-top:10px;padding:12px;background:#1E2F5E;color:#fff;border-radius:14px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-content{background:#fff;border-radius:24px;padding:20px;max-width:360px;width:100%;max-height:85vh;overflow-y:auto}
+.modal-full{position:fixed;inset:0;background:#FFFCF2;z-index:100000;display:none;overflow-y:auto}
+.tamale-icon{font-size:30px;background:#fff;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:2px solid #1E2F5E;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.client-icon{font-size:24px;background:#1E2F5E;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center}
+.hidden-btn{position:fixed;bottom:12px;right:12px;width:18px;height:18px;background:transparent;z-index:9999;cursor:pointer;opacity:0.05;border-radius:50%}
+.sup-tab{padding:8px 12px;border-radius:999px;font-size:12px;cursor:pointer;border:1px solid var(--crema);background:#fff}
+.sup-tab.active{background:var(--azul);color:#fff}
+.badge{padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700}
+.badge-pending{background:#FFF3CD;color:#856404}
+.badge-confirmed{background:#D4EDDA;color:#155724}
+.badge-cancelled{background:#F8D7DA;color:#721C24}
+</style>
+</head>
+<body>
+<div id="splash">
+  <img id="splash-cuates" src="los_cuates_logo.webp" alt="Los Cuates">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:18px">
+    <div id="splash-bar"><div id="splash-progress"></div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+      <img id="splash-jm" src="jm_logo.png" alt="JM">
+      <div id="splash-design">JM Design</div>
+    </div>
+  </div>
+  <div style="height:20px"></div>
+</div>
+
+<div id="sarape"></div><div id="watermark"></div>
+<div class="container">
+<div class="header">
+<img class="logo" src="los_cuates_logo.webp" alt="Los Cuates">
+<div class="brand">LOS CUATES</div>
+<div class="sub">Tamales en Hoja de Plátano — Saltillo</div>
+<div class="badge-wa">WhatsApp 844-225-2582</div>
+<div id="userWelcome" style="margin-top:8px;font-size:11px;color:var(--azul);display:none"></div>
+<div id="promoBanner" style="display:none;margin-top:12px;background:#B9975B;color:#fff;padding:10px;border-radius:12px;font-size:12px"></div>
+</div>
+
+<div class="card">
+<div class="card-title" style="font-size:22px">¿Dónde te entregamos?</div>
+<div id="map"></div>
+<button class="btn btn-outline" style="margin-top:10px" onclick="fijarCliente()">📍 Fijar mi ubicación</button>
+<button class="btn btn-outline" style="margin-top:10px" onclick="ruta()">🧭 Ver ruta</button>
+<div class="policy">
+<h4>📋 Políticas de pedido — área metropolitana Saltillo.</h4>
+<div class="policy-item"><span>🕒</span><span class="policy-text"><span class="policy-highlight">Fuera de horario +10 tamales:</span> Si pides después de las 12pm, se solicita 50% por adelantado y se realiza pedido a partir de 10 tamales con 1 día de anticipación. A partir de 20+ 3 días de anticipación y entrega a domicilio gratis. Asegura tu pedido.</span></div>
+<div class="policy-item"><span>🎉</span><span class="policy-text"><span class="policy-highlight">Eventos y pedidos grandes:</span> Para fiestas, posadas y eventos, agenda con 3 a 4 días de anticipación y 50% adelantado. Así preparamos productos frescos y garantizamos calidad y sabor original. (Cancelaciones con 2 días de anticipación no tendrán penalización).</span></div>
+<div class="policy-item"><span>🚚</span><span class="policy-text"><span class="policy-highlight">Envío $30 x km:</span> Calculamos automático con Haversine desde puesto hasta tu pin 📍. Tarifa mínima $30. Se suma al total. Recoger en puesto no tiene costo extra.</span></div>
+</div>
+<div id="deliveryCalc" class="delivery-info">
+<div style="font-size:11px"><span id="distText"></span> • <span id="costText"></span><span id="gratisText" style="display:none;color:green;font-weight:700"> • GRATIS por 20+ tamales</span></div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-title">Menú — $40 c/u</div>
+<div id="menu"></div>
+</div>
+
+<div class="card">
+<div class="card-title" style="font-size:22px">📅 Apartar fecha</div>
+<div style="font-size:11px;color:#6B5E4A;margin-top:4px">Elige fecha y hora para tu pedido, crearemos folio y esperaremos confirmación</div>
+<input id="fechaEntrega" type="date" class="input" style="margin-top:10px">
+<input id="horaEntrega" type="time" value="13:00" class="input" style="margin-top:8px">
+<textarea id="notas" class="input" placeholder="Notas (ej: sin picante, 10 queso 10 verde)" style="margin-top:8px;height:60px"></textarea>
+<div id="calendarInfo" style="font-size:11px;color:#9A8F7A;margin-top:8px"></div>
+</div>
+
+<div class="card" id="checkout">
+<div class="card-title" style="font-size:22px">Tus datos</div>
+<input id="nombre" class="input" placeholder="Nombre" readonly>
+<select id="entrega" class="input" style="margin-top:8px" onchange="calcDelivery()"><option value="domicilio">A domicilio (+ $30 x km)</option><option value="puesto">Recoger en puesto</option></select>
+<input id="dir" class="input" placeholder="Dirección / referencia" style="margin-top:8px">
+<div id="summary" style="margin-top:12px;font-size:12px;background:#FFFCF2;padding:10px;border-radius:10px;border:1px solid #F5EEDD"></div>
+<button class="btn btn-primary" style="margin-top:14px" onclick="crearPedido()">Crear folio y apartar fecha →</button>
+<div id="qrPedidoBox" class="qr-box" style="display:none">
+<img id="qrPedidoImg" src="" style="width:160px;height:160px;margin-top:8px">
+<div id="folioText" style="font-size:12px;font-weight:700;margin-top:6px"></div>
+<div style="font-size:10px;color:#9A8F7A;margin-top:4px">Muestra este QR al repartidor</div>
+</div>
+</div>
+
+<div class="card" id="misPedidosCard" style="display:none">
+<div class="card-title" style="font-size:20px">📦 Mis pedidos</div>
+<div id="misPedidosList" style="margin-top:10px"></div>
+</div>
+
+<div class="card">
+<div class="card-title" style="font-size:20px">QR de la App — Le da nivel 🔥</div>
+<div class="qr-box">
+<img id="qrAppImg" src="" style="width:200px;height:200px">
+<div style="font-size:11px;font-weight:700;margin-top:8px;color:var(--azul)">Instalar Los Cuates</div>
+</div>
+<div class="qr-cool">
+<div style="font-size:12px;font-weight:700">¿Para qué es el QR? 🎁</div>
+<div style="font-size:11px;margin-top:6px;line-height:1.5">
+• <b>Instalar:</b> Añade a pantalla de inicio iPhone/Android<br>
+• <b>Lealtad:</b> 10 tamales = 2 gratis (recordatorio automático)<br>
+• <b>Cumpleaños:</b> +5 compras = tamal gratis en tu cumple<br>
+• <b>Promo:</b> Desbloquea tamal del mes
+</div>
+</div>
+</div>
+
+</div>
+
+<div class="cart"><div><div id="cCount" style="font-weight:700;color:#1E2F5E">0 tamales</div><div id="cTotal" style="font-family:'Cormorant Garamond';font-size:18px;color:#B9975B">$0</div></div><button class="btn btn-primary" style="width:auto;padding:10px 18px" onclick="document.getElementById('checkout').scrollIntoView({behavior:'smooth'})">Pedir</button></div>
+
+<div class="hidden-btn" onclick="openSupLogin()" title="Supervision"></div>
+
+<div id="loginModal" class="modal"><div class="modal-content">
+<div style="text-align:center"><img src="los_cuates_logo.webp" style="width:80px;border-radius:12px"><div style="font-family:'Cormorant Garamond';font-size:20px;font-weight:700;color:var(--azul);margin-top:8px">Bienvenido a Los Cuates</div><div style="font-size:11px;color:#9A8F7A">Registro primera vez</div></div>
+<input id="regNombre" class="input" placeholder="Nombre *" style="margin-top:12px">
+<input id="regApellido" class="input" placeholder="Al menos un apellido *" style="margin-top:8px">
+<input id="regNacimiento" type="date" class="input" style="margin-top:8px">
+<input id="regPassword" type="password" class="input" placeholder="Crear contraseña *" style="margin-top:8px">
+<button class="btn btn-primary" style="margin-top:12px" onclick="registerClient()">Crear cuenta y continuar</button>
+<div style="font-size:10px;color:#9A8F7A;margin-top:8px;text-align:center">Cumpleaños +5 compras = tamal gratis 🎂</div>
+</div></div>
+
+<div id="supLoginModal" class="modal"><div class="modal-content">
+<div style="font-family:'Cormorant Garamond';font-size:18px;font-weight:700;color:var(--azul)">Módulo Supervisión</div>
+<input id="supPassInput" type="password" class="input" placeholder="Contraseña" style="margin-top:10px">
+<button class="btn btn-primary" style="margin-top:10px" onclick="checkSupPass()">Ingresar</button>
+<button class="btn btn-outline" style="margin-top:8px" onclick="closeSupLogin()">Cancelar</button>
+</div></div>
+
+<div id="supModal" class="modal-full">
+<div style="padding:20px;max-width:900px;margin:0 auto">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div><div style="font-family:'Cormorant Garamond';font-size:28px;font-weight:700;color:var(--azul)">Supervisión Los Cuates</div><div style="font-size:11px;color:#9A8F7A">Base de datos siempre disponible</div></div>
+<button class="btn btn-outline" style="width:auto;padding:8px 16px" onclick="closeSup()">Cerrar</button>
+</div>
+<div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+<button class="sup-tab active" data-tab="pedidos" onclick="switchSupTab('pedidos')">Pedidos</button>
+<button class="sup-tab" data-tab="clientes" onclick="switchSupTab('clientes')">Clientes DB</button>
+<button class="sup-tab" data-tab="qr" onclick="switchSupTab('qr')">Lector QR</button>
+<button class="sup-tab" data-tab="cumple" onclick="switchSupTab('cumple')">Cumpleaños</button>
+<button class="sup-tab" data-tab="lealtad" onclick="switchSupTab('lealtad')">Lealtad 10=2</button>
+<button class="sup-tab" data-tab="promos" onclick="switchSupTab('promos')">Promos</button>
+</div>
+
+<div id="supContent" style="margin-top:16px"></div>
+</div>
+</div>
+
+<div id="genericModal" class="modal" onclick="this.style.display='none'"><div class="modal-content"><div id="genericModalText"></div><button class="btn btn-primary" style="margin-top:12px" onclick="document.getElementById('genericModal').style.display='none'">Ok</button></div></div>
+
+<script>
+const PUESTO={lat:25.436368,lng:-100.99837};
+function haversine(lat1,lon1,lat2,lon2){const R=6371;const dLat=(lat2-lat1)*Math.PI/180;const dLon=(lon2-lon1)*Math.PI/180;const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+let clients=JSON.parse(localStorage.getItem('loscuates_clients')||'[]');
+let orders=JSON.parse(localStorage.getItem('loscuates_orders')||'[]');
+let promos=JSON.parse(localStorage.getItem('loscuates_promos')||'[]');
+let currentUser=JSON.parse(localStorage.getItem('loscuates_currentUser')||'null');
+let cart={queso:0,verde:0,rojo:0},cust=null,distKm=0,map,rMarker,cMarker;
+
+function save(){localStorage.setItem('loscuates_clients',JSON.stringify(clients));localStorage.setItem('loscuates_orders',JSON.stringify(orders));localStorage.setItem('loscuates_promos',JSON.stringify(promos));if(currentUser)localStorage.setItem('loscuates_currentUser',JSON.stringify(currentUser));}
+function showModal(t){document.getElementById('genericModalText').innerText=t;document.getElementById('genericModal').style.display='flex';}
+function tomorrowStr(){const d=new Date();d.setDate(d.getDate()+1);return d.toISOString().split('T')[0];}
+
+(function(){
+  const bar=document.getElementById('splash-progress');const splash=document.getElementById('splash');let p=0;const iv=setInterval(()=>{p+=2;bar.style.width=p+'%';if(p>=100)clearInterval(iv)},28);setTimeout(()=>{splash.classList.add('hide');setTimeout(()=>splash.style.display='none',600)},2800);
+})();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+document.getElementById('fechaEntrega').min=tomorrowStr();
+
+function checkBirthdayToday(client){
+  if(!client.nacimiento) return false;
+  const today=new Date();const b=new Date(client.nacimiento);
+  return today.getMonth()===b.getMonth() && today.getDate()===b.getDate();
+}
+
+function renderUser(){
+  if(currentUser){
+    document.getElementById('userWelcome').style.display='block';
+    document.getElementById('userWelcome').innerText=`Hola ${currentUser.nombre} ${currentUser.apellido} • ${currentUser.tamalesTotal||0} tamales • ${currentUser.compras||0} pedidos`;
+    document.getElementById('nombre').value=currentUser.nombre+' '+currentUser.apellido;
+    // birthday check
+    if(checkBirthdayToday(currentUser) && (currentUser.compras||0)>=5){
+      showModal(`¡Feliz cumpleaños ${currentUser.nombre}! 🎂 Tienes tamal gratis por tener +5 compras registradas. ¡Felicidades de Los Cuates!`);
+    }
+    // lealtad reminder
+    if((currentUser.tamalesTotal||0)>=10){
+      const premios=Math.floor(currentUser.tamalesTotal/10);
+      showModal(`🏆 ¡Premio disponible! Llevas ${currentUser.tamalesTotal} tamales. Tienes ${premios*2} tamales gratis por lealtad 10=2. Pídelos en tu próximo pedido.`);
+    }
+  }
+}
+function renderPromos(){
+  const active=promos.filter(p=>p.activa);
+  if(active.length){
+    const banner=document.getElementById('promoBanner');
+    banner.style.display='block';
+    banner.innerHTML=active.map(p=>`<b>${p.titulo}:</b> ${p.desc}`).join('<br>');
+  }
+}
+function renderMenu(){
+  document.getElementById('menu').innerHTML=[
+    {id:'queso',nombre:'Queso'},
+    {id:'verde',nombre:'Verde de Pollo'},
+    {id:'rojo',nombre:'Rojo de Puerco'}
+  ].map(s=>`<div class="menu-item"><div><div class="menu-name">${s.nombre}</div><div style="display:flex;gap:10px;align-items:center;margin-top:6px"><button class="qty-btn" onclick="chg('${s.id}',-1)">−</button><span id="q${s.id}">${cart[s.id]||0}</span><button class="qty-btn" onclick="chg('${s.id}',1)">+</button></div></div><div class="price">$40</div></div>`).join('');
+}
+function chg(id,d){cart[id]=(cart[id]||0)+d;if(cart[id]<=0)delete cart[id];document.getElementById('q'+id).innerText=cart[id]||0;upd();}
+function upd(){
+  let t=0,c=0;for(let k in cart){t+=cart[k]*40;c+=cart[k];}
+  calcDelivery();
+  const entrega=document.getElementById('entrega').value;
+  const envio=entrega==='puesto'?0:(c>=20 && getDiasAnticipacion()>=3?0:Math.max(30,Math.round(distKm*30))||0);
+  const total=t+envio;
+  document.getElementById('cCount').innerText=`${c} tamales`;
+  document.getElementById('cTotal').innerText=`$${total}`;
+  let html=c?`${c} tamales = $${t}`:'Aún no agregas';
+  if(entrega==='domicilio' && envio>0) html+=`<br>Envío (${distKm.toFixed(2)} km x $30) = $${envio}<br><b>Total: $${total}</b>`;
+  else if(entrega==='domicilio' && envio===0 && distKm>0) html+=`<br>Envío GRATIS por 20+ tamales y 3 días anticipación<br><b>Total: $${total}</b>`;
+  else if(entrega==='domicilio') html+=`<br><span style="color:#9A8F7A">Fija ubicación para calcular envío</span><br><b>Total: $${t}</b>`;
+  else html+=`<br><b>Total recoger: $${t}</b>`;
+  document.getElementById('summary').innerHTML=html;
+}
+function getDiasAnticipacion(){
+  const fecha=document.getElementById('fechaEntrega').value;
+  if(!fecha) return 0;
+  return Math.ceil((new Date(fecha).getTime()-new Date().setHours(0,0,0,0))/(1000*60*60*24));
+}
+function calcDelivery(){
+  const entrega=document.getElementById('entrega').value;
+  if(entrega==='puesto' || !cust){distKm=0;document.getElementById('deliveryCalc').style.display='none';return;}
+  distKm=haversine(PUESTO.lat,PUESTO.lng,cust.lat,cust.lng);
+  const envioGratis = (cart.queso+cart.verde+cart.rojo)>=20 && getDiasAnticipacion()>=3;
+  document.getElementById('deliveryCalc').style.display='block';
+  document.getElementById('distText').innerText=`📍 ${distKm.toFixed(2)} km`;
+  document.getElementById('costText').innerText=envioGratis?`🚚 GRATIS`:`🚚 $${Math.max(30,Math.round(distKm*30))} envío`;
+  document.getElementById('gratisText').style.display=envioGratis?'inline':'none';
+  upd();
+}
+function initMap(){
+  map=L.map('map').setView([PUESTO.lat,PUESTO.lng],17);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(map);
+  const tamaleIcon=L.divIcon({html:'<div class="tamale-icon">🫔</div>',className:'',iconSize:[44,44],iconAnchor:[22,22]});
+  rMarker=L.marker([PUESTO.lat,PUESTO.lng],{icon:tamaleIcon}).addTo(map).bindPopup('LOS CUATES 🫔');
+  map.on('click',e=>{cust={lat:e.latlng.lat,lng:e.latlng.lng};const clientIcon=L.divIcon({html:'<div class="client-icon">📍</div>',className:'',iconSize:[36,36],iconAnchor:[18,18]});if(!cMarker)cMarker=L.marker([cust.lat,cust.lng],{icon:clientIcon}).addTo(map);else cMarker.setLatLng([cust.lat,cust.lng]).setIcon(clientIcon);calcDelivery();});
+}
+function fijarCliente(){
+  if(!navigator.geolocation){showModal('Toca el mapa');return;}
+  navigator.geolocation.getCurrentPosition(p=>{
+    cust={lat:p.coords.latitude,lng:p.coords.longitude};
+    const clientIcon=L.divIcon({html:'<div class="client-icon">📍</div>',className:'',iconSize:[36,36],iconAnchor:[18,18]});
+    if(!cMarker)cMarker=L.marker([cust.lat,cust.lng],{icon:clientIcon}).addTo(map);
+    else cMarker.setLatLng([cust.lat,cust.lng]).setIcon(clientIcon);
+    map.fitBounds([[PUESTO.lat,PUESTO.lng],[cust.lat,cust.lng]],{padding:[50,50]});
+    calcDelivery();
+  },()=>{showModal('Toca el mapa');},{enableHighAccuracy:true});
+}
+function ruta(){if(!cust){showModal('Fija tu ubicación');return;}window.open(`https://www.google.com/maps/dir/?api=1&origin=${cust.lat},${cust.lng}&destination=${PUESTO.lat},${PUESTO.lng}`,'_blank');}
+function registerClient(){
+  const nombre=document.getElementById('regNombre').value.trim();
+  const apellido=document.getElementById('regApellido').value.trim();
+  const nacimiento=document.getElementById('regNacimiento').value;
+  const password=document.getElementById('regPassword').value;
+  if(!nombre||!apellido||!password){showModal('Nombre, apellido y contraseña obligatorios');return;}
+  const newClient={id:'CL-'+Math.random().toString(36).slice(2,7).toUpperCase(),nombre,apellido,nacimiento,password,compras:0,tamalesTotal:0,fechaRegistro:new Date().toISOString()};
+  clients.push(newClient);currentUser=newClient;save();document.getElementById('loginModal').style.display='none';renderUser();renderMisPedidos();showModal(`¡Bienvenido ${nombre}! Cuenta creada.`);
+}
+function crearPedido(){
+  if(!currentUser){document.getElementById('loginModal').style.display='flex';return;}
+  const c=cart.queso+cart.verde+cart.rojo;if(c===0){showModal('Agrega tamales');return;}
+  const fecha=document.getElementById('fechaEntrega').value;if(!fecha){showModal('Elige fecha para apartar');return;}
+  const hora=document.getElementById('horaEntrega').value;const entrega=document.getElementById('entrega').value;const dir=document.getElementById('dir').value;const notas=document.getElementById('notas').value;
+  const dias=getDiasAnticipacion();
+  if(c>=10 && dias<1){showModal('Pedidos de 10+ tamales con 1 día de anticipación mínimo');return;}
+  if(c>=20 && dias<3){/* advertencia pero permite */ }
+  let subtotal=c*40;
+  const envioGratis=c>=20 && dias>=3;
+  const envio=entrega==='puesto'?0:(envioGratis?0:Math.max(30,Math.round(distKm*30))||30);
+  const total=subtotal+envio;
+  const folio='CUATES-'+Math.floor(1000+Math.random()*9000);
+  const order={folio,clientId:currentUser.id,clientNombre:currentUser.nombre+' '+currentUser.apellido,fechaCreacion:new Date().toISOString(),fechaEntrega:fecha,horaEntrega:hora,items:{...cart},total,envio,distanciaKm:distKm,tipo:entrega,status:'pending',qrUsed:false,notas:`Dir:${dir} | ${notas}`,direccion:dir};
+  orders.push(order);
+  // actualizar cliente
+  currentUser.compras=(currentUser.compras||0)+1;
+  currentUser.tamalesTotal=(currentUser.tamalesTotal||0)+c;
+  currentUser.ultimoPedido=fecha;
+  clients=clients.map(cl=>cl.id===currentUser.id?currentUser:cl);
+  save();
+  document.getElementById('qrPedidoBox').style.display='block';
+  document.getElementById('qrPedidoImg').src=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${folio}`;
+  document.getElementById('folioText').innerText=folio;
+  document.getElementById('calendarInfo').innerText=`Folio ${folio} creado para ${fecha} a las ${hora}. Esperando confirmación de Los Cuates.`;
+  // whatsapp
+  let msg=`Hola LOS CUATES! Soy ${currentUser.nombre} ${currentUser.apellido}%0AFolio:${folio}%0AFecha:${fecha} ${hora}%0AQuiero: ${cart.queso}x Queso, ${cart.verde}x Verde, ${cart.rojo}x Rojo%0ATotal:$${total} (envío $${envio})%0AEntrega:${entrega}%0ADir:${dir}%0A${notas}`;
+  if(cust)msg+=`%0AMaps:https://www.google.com/maps?q=${cust.lat},${cust.lng}`;
+  window.open(`https://wa.me/528442252582?text=${msg}`,'_blank');
+  cart={queso:0,verde:0,rojo:0};renderMenu();upd();renderMisPedidos();renderUser();
+  showModal(`¡Pedido apartadO! Folio ${folio} para ${fecha}. Espera confirmación de Los Cuates en WhatsApp.`);
+}
+function renderMisPedidos(){
+  if(!currentUser){return;}
+  const myOrders=orders.filter(o=>o.clientId===currentUser.id);
+  if(myOrders.length===0){document.getElementById('misPedidosCard').style.display='none';return;}
+  document.getElementById('misPedidosCard').style.display='block';
+  document.getElementById('misPedidosList').innerHTML=myOrders.map(o=>{
+    const badge=o.status==='pending'?'<span class="badge badge-pending">Pendiente</span>':o.status==='confirmed'?'<span class="badge badge-confirmed">Confirmado</span>':o.status==='rescheduled'?'<span class="badge" style="background:#CCE5FF;color:#004085">Reagendado</span>':'<span class="badge badge-cancelled">Cancelado</span>';
+    return `<div style="border:1px solid #E9E0C9;border-radius:12px;padding:10px;margin-bottom:8px;background:#fff"><div style="display:flex;justify-content:space-between"><b style="font-size:12px">${o.folio}</b>${badge}</div><div style="font-size:11px;margin-top:4px">📅 ${o.fechaEntrega} ${o.horaEntrega||''} • ${o.items.queso+o.items.verde+o.items.rojo} tamales • $${o.total} ${o.qrUsed?'(QR usado)':''}</div><div style="font-size:10px;color:#9A8F7A">${o.notas||''}</div></div>`;
+  }).join('');
+}
+function openSupLogin(){document.getElementById('supLoginModal').style.display='flex';}
+function closeSupLogin(){document.getElementById('supLoginModal').style.display='none';}
+function checkSupPass(){if(document.getElementById('supPassInput').value==='1a2b3c4d'){closeSupLogin();document.getElementById('supModal').style.display='block';switchSupTab('pedidos');}else{showModal('Contraseña incorrecta');}}
+function closeSup(){document.getElementById('supModal').style.display='none';}
+function switchSupTab(tab){
+  document.querySelectorAll('.sup-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  const content=document.getElementById('supContent');
+  if(tab==='pedidos'){
+    content.innerHTML=`<div style="display:grid;gap:8px">${orders.map(o=>`
+      <div style="background:#fff;border:1px solid #E9E0C9;border-radius:14px;padding:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><b>${o.folio}</b> <span class="badge ${o.status==='pending'?'badge-pending':o.status==='confirmed'?'badge-confirmed':'badge-cancelled'}">${o.status}</span></div>
+        <div style="font-size:11px;margin-top:6px">Cliente: ${o.clientNombre} • ${o.fechaEntrega} ${o.horaEntrega} • ${o.items.queso+o.items.verde+o.items.rojo} tamales • $${o.total} • ${o.tipo} • ${o.distanciaKm.toFixed(2)} km</div>
+        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-primary" style="width:auto;padding:6px 10px;font-size:11px" onclick="confirmOrder('${o.folio}')">Confirmar</button>
+          <button class="btn btn-outline" style="width:auto;padding:6px 10px;font-size:11px" onclick="rescheduleOrder('${o.folio}')">Reagendar</button>
+          <button class="btn btn-outline" style="width:auto;padding:6px 10px;font-size:11px;color:#721C24;border-color:#F5C6CB" onclick="cancelOrder('${o.folio}')">Cancelar</button>
+          <button class="btn btn-outline" style="width:auto;padding:6px 10px;font-size:11px" onclick="scanQRDirect('${o.folio}')">QR Usado</button>
+        </div>
+      </div>
+    `).join('') || '<div style="font-size:12px;opacity:.6">No hay pedidos</div>'}</div>`;
+  } else if(tab==='clientes'){
+    content.innerHTML=`<div style="background:#fff;border:1px solid #E9E0C9;border-radius:14px;overflow:auto"><table style="width:100%;font-size:11px;border-collapse:collapse"><thead><tr style="background:#FFFCF2"><th style="padding:8px;text-align:left">Cliente</th><th>Nac</th><th>Compras</th><th>Tamales</th><th>Premios</th></tr></thead><tbody>${clients.map(c=>`<tr style="border-top:1px solid #F5EEDD"><td style="padding:8px"><b>${c.nombre} ${c.apellido}</b><br><span style="font-size:10px;color:#9A8F7A">${c.id}</span></td><td style="padding:8px">${c.nacimiento||'-'}</td><td style="padding:8px">${c.compras||0}</td><td style="padding:8px">${c.tamalesTotal||0}</td><td style="padding:8px">${Math.floor((c.tamalesTotal||0)/10)*2} gratis</td></tr>`).join('')}</tbody></table></div>`;
+  } else if(tab==='qr'){
+    content.innerHTML=`<div style="background:#fff;border:1px solid #E9E0C9;border-radius:14px;padding:14px"><h4 style="font-size:14px;font-weight:700">Lector QR — Desactivar folio</h4><p style="font-size:11px;opacity:.7;margin-top:4px">Al escanear, qrUsed=true y no podrá reutilizar mismo QR. Guarda compra para lealtad 10=2 gratis.</p><div style="margin-top:10px;display:flex;gap:8px"><input id="qrInputSup" placeholder="CUATES-1234" class="input" style="flex:1"><button class="btn btn-primary" style="width:auto;padding:8px 14px" onclick="scanQR()">Desactivar</button></div><div style="margin-top:12px"><button class="btn btn-outline" style="width:auto;padding:6px 12px;font-size:11px" onclick="activateCamera()">Activar cámara</button><div id="reader" style="margin-top:8px;width:100%;height:220px;background:#000;border-radius:10px;display:grid;place-items:center;color:#fff;font-size:11px">Cámara aquí</div></div><div style="margin-top:12px;font-size:11px"><b>QR usados:</b><br>${orders.filter(o=>o.qrUsed).map(o=>`${o.folio} - ${o.clientNombre}`).join('<br>')||'Ninguno'}</div></div>`;
+  } else if(tab==='cumple'){
+    const hoyCumple=clients.filter(c=>{if(!c.nacimiento)return false;const t=new Date();const b=new Date(c.nacimiento);return t.getMonth()===b.getMonth() && t.getDate()===b.getDate();});
+    content.innerHTML=`<div style="display:grid;gap:8px">${hoyCumple.map(c=>`<div style="background:#fff;border:1px solid #E9E0C9;border-radius:12px;padding:10px;display:flex;justify-content:space-between;align-items:center"><div><b style="font-size:13px">🎂 ${c.nombre} ${c.apellido} • Hoy cumple</b><div style="font-size:11px;opacity:.7">${c.compras||0} compras • ${c.tamalesTotal||0} tamales • ${c.nacimiento}</div></div><button class="btn btn-primary" style="width:auto;padding:6px 10px;font-size:11px" onclick="showModal('Tamal cumpleañero regalado a ${c.nombre}')">Regalar</button></div>`).join('')||'<div style="font-size:12px;opacity:.6">Hoy no hay cumpleañeros. Todos: '+clients.map(c=>c.nombre).join(', ')+'</div>'}<div style="margin-top:12px;background:#FFF8E8;border:1px dashed #E9E0C9;border-radius:12px;padding:10px;font-size:11px"><b>Recordatorio:</b> Clientes con +5 compras reciben tamal gratis en cumpleaños.</div></div>`;
+  } else if(tab==='lealtad'){
+    content.innerHTML=`<div style="display:grid;gap:8px">${clients.map(c=>{const progress=(c.tamalesTotal||0)%10;const premios=Math.floor((c.tamalesTotal||0)/10);return `<div style="background:#fff;border:1px solid #E9E0C9;border-radius:12px;padding:10px;display:flex;justify-content:space-between"><div><b style="font-size:12px">${c.nombre} ${c.apellido}</b><div style="font-size:11px;opacity:.7">${c.tamalesTotal||0} tamales • ${progress}/10 para próximo • Premios: ${premios} (${premios*2} gratis)</div>${(c.tamalesTotal||0)>=10?'<span style="font-size:10px;background:#B9975B;color:#fff;padding:2px 6px;border-radius:999px">🎁 Premio disponible</span>':''}</div><div style="font-size:18px">${premios>0?'🏆':'🫔'}</div></div>`}).join('')}</div><div style="margin-top:12px;font-size:11px;opacity:.7">Recordatorio automático para cliente y supervisor cuando llegan a 10.</div>`;
+  } else if(tab==='promos'){
+    content.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div style="background:#fff;border:1px solid #E9E0C9;border-radius:14px;padding:12px"><h4 style="font-size:13px;font-weight:700">Crear promoción</h4><input id="promoTitulo" placeholder="Título" class="input" style="margin-top:8px"><textarea id="promoDesc" placeholder="Descripción" class="input" style="margin-top:8px;height:70px"></textarea><button class="btn btn-primary" style="margin-top:8px" onclick="createPromo()">Publicar</button></div><div style="display:grid;gap:8px">${promos.map(p=>`<div style="background:#fff;border:1px solid #E9E0C9;border-radius:12px;padding:10px"><b style="font-size:12px">${p.titulo}</b><div style="font-size:11px;opacity:.7">${p.desc}</div><button class="btn btn-outline" style="width:auto;padding:4px 8px;font-size:10px;margin-top:6px" onclick="togglePromo('${p.id}')">${p.activa?'Activa':'Inactiva'}</button></div>`).join('')}</div></div>`;
+  }
+}
+function confirmOrder(folio){orders=orders.map(o=>o.folio===folio?{...o,status:'confirmed'}:o);save();switchSupTab('pedidos');showModal(`Pedido ${folio} confirmado ✅`);}
+function rescheduleOrder(folio){const nueva=prompt('Nueva fecha YYYY-MM-DD');if(!nueva)return;orders=orders.map(o=>o.folio===folio?{...o,fechaEntrega:nueva,status:'rescheduled'}:o);save();switchSupTab('pedidos');showModal(`Pedido ${folio} reagendado a ${nueva}`);}
+function cancelOrder(folio){if(!confirm(`Cancelar ${folio}?`))return;orders=orders.map(o=>o.folio===folio?{...o,status:'cancelled'}:o);save();switchSupTab('pedidos');}
+function scanQR(){const input=document.getElementById('qrInputSup')?.value||document.getElementById('qrInput')?.value;if(!input){showModal('Escribe folio');return;}const order=orders.find(o=>o.folio===input.trim());if(!order){showModal('Folio no encontrado');return;}order.qrUsed=true;save();showModal(`QR ${input} desactivado. Cliente ${order.clientNombre} • ${order.items.queso+order.items.verde+order.items.rojo} tamales guardados para lealtad 10=2 gratis.`);switchSupTab('qr');}
+function scanQRDirect(folio){const o=orders.find(x=>x.folio===folio);if(o){o.qrUsed=true;save();showModal(`QR ${folio} marcado como usado`);switchSupTab('pedidos');}}
+function activateCamera(){
+  const reader=document.getElementById('reader');
+  const script=document.createElement('script');
+  script.src='https://unpkg.com/html5-qrcode';
+  script.onload=()=>{
+    const Html5Qrcode=window.Html5Qrcode;
+    if(!Html5Qrcode){reader.innerText='Lib no disponible';return;}
+    const qr=new Html5Qrcode('reader');
+    qr.start({facingMode:'environment'},{fps:10,qrbox:200},(decoded)=>{document.getElementById('qrInputSup').value=decoded;showModal('QR escaneado: '+decoded);},()=>{}).catch(()=>reader.innerText='No se pudo iniciar cámara');
+  };
+  document.body.appendChild(script);
+}
+function createPromo(){const t=document.getElementById('promoTitulo').value;const d=document.getElementById('promoDesc').value;if(!t)return;const p={id:'P-'+Math.random().toString(36).slice(2,6).toUpperCase(),titulo:t,desc:d,activa:true,fecha:new Date().toISOString()};promos.push(p);save();switchSupTab('promos');renderPromos();showModal('Promo creada');}
+function togglePromo(id){promos=promos.map(p=>p.id===id?{...p,activa:!p.activa}:p);save();switchSupTab('promos');renderPromos();}
+function generarQRapp(){document.getElementById('qrAppImg').src=`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(window.location.href)}`;}
+
+// init
+window.onload=()=>{
+  renderMenu();upd();renderUser();renderPromos();renderMisPedidos();
+  setTimeout(()=>{initMap();generarQRapp();},600);
+  if(!currentUser) setTimeout(()=>{document.getElementById('loginModal').style.display='flex';},3000);
+};
+</script>
+</body>
+</html>
