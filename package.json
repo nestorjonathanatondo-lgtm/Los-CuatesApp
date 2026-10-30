@@ -3,6 +3,7 @@
   "version": "9.0.0",
   "private": true,
   "scripts": {
+    "dev": "npx serve . -l 3000",
     "start": "npx serve .",
     "build:web": "node scripts/build-web.mjs",
     "cap:add:android": "npx cap add android",
