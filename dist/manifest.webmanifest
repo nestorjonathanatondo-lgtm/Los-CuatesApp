@@ -1,0 +1,16 @@
+{
+  "name": "Los Cuates",
+  "short_name": "Los Cuates",
+  "description": "Pedidos de tamales en hoja de plátano",
+  "lang": "es-MX",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f8f5ee",
+  "theme_color": "#D86A3A",
+  "orientation": "portrait-primary",
+  "categories": ["food", "shopping"],
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Los Cuates</string>
+    <string name="title_activity_main">Los Cuates</string>
+    <string name="package_name">mx.loscuates.app</string>
+    <string name="custom_url_scheme">mx.loscuates.app</string>
+</resources>
