@@ -2,10 +2,17 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Los Cuates - Tamales Hoja Plátano - V8 100% Firebase</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#D86A3A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Los Cuates">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<title>Los Cuates - Tamales Hoja Plátano</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <style>
 :root{--bg:#f8f5ee;--card:#fff;--shadow:12px 12px 24px #e6dfd1,-12px -12px 24px #ffffff;--shadow-in:inset 6px 6px 12px #e6dfd1,inset -6px -6px 12px #ffffff;--terra:#D86A3A;--verde:#4A7C59;--maiz:#E8C36A;--azul:#1e3a5f;--text:#2e2a24}
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif}
@@ -52,11 +59,15 @@ input,select,textarea{width:100%;padding:12px 14px;border-radius:14px;border:non
 .footer{max-width:1100px;margin:30px auto;padding:20px;text-align:center}
 .footer .jm-logo{width:54px;height:54px;border-radius:50%;box-shadow:var(--shadow);cursor:pointer;transition:transform .2s;object-fit:cover;background:#000}
 .footer .jm-logo:active{transform:scale(1.2)}
-.pagos-preview{background:var(--bg);box-shadow:var(--shadow-in);border-radius:14px;padding:12px;font-size:12px;margin-top:10px}
+.pagos-preview{background:var(--bg);box-shadow:var(--shadow-in);border-radius:14px;padding:12px;font-size:12px;margin-top:10px}.schedule-card,.terms-card{margin-top:12px;padding:12px;border-radius:14px;background:var(--bg);box-shadow:var(--shadow-in)}.terms-card{font-size:12px;line-height:1.5}.danger-btn{background:#a83d32!important}.admin-inline{display:flex;gap:8px;align-items:end}.admin-inline>*{flex:1}#ticketBox{position:relative;overflow:hidden}#ticketBox:before{content:'LOS CUATES';position:absolute;inset:25% 0;display:grid;place-items:center;font-size:clamp(32px,9vw,86px);font-weight:900;letter-spacing:8px;color:var(--terra);opacity:.2;transform:rotate(-24deg);pointer-events:none;z-index:0}#ticketBox>*{position:relative;z-index:1}
 </style>
 <script>
-// Fix pantalla blanca
-(function(){if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(r=>r.forEach(reg=>reg.unregister()))} if(window.caches){caches.keys().then(k=>k.forEach(x=>caches.delete(x)))}})();
+// Registro PWA: permite instalar Los Cuates en iOS, Android y escritorio.
+(function(){
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
+  }
+})();
 </script>
 </head>
 <body>
@@ -97,6 +108,8 @@ input,select,textarea{width:100%;padding:12px 14px;border-radius:14px;border:non
     <input id="dir" placeholder="Calle y colonia">
     <div style="display:flex;gap:8px;margin-top:8px"><input id="km" type="number" step="0.1" placeholder="km (ej 2.5)" style="flex:1"><button class="btn" style="padding:10px 14px" onclick="calcKm()">Calcular $30/km</button></div>
     <div id="map"></div>
+    <div class="schedule-card"><label><b>¿Cuándo deseas recibirlo?</b><select id="tipoPedido" onchange="toggleSchedule()"><option value="ahora">Lo antes posible</option><option value="programado">Programar pedido</option></select></label><label id="scheduleFields" hidden>Fecha y hora<input id="fechaPedido" type="datetime-local" onchange="validateSchedule()"><small id="scheduleHint">Puedes agendar hasta dos meses después.</small></label></div>
+    <div class="terms-card" id="termsPreview"></div>
     <div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn2" onclick="openGmaps()">Abrir en Google Maps</button><span id="distTxt" style="font-size:12px;align-self:center"></span></div>
     <div class="pagos-preview" id="pagosPreviewFooter"></div>
   </div>
@@ -173,6 +186,7 @@ input,select,textarea{width:100%;padding:12px 14px;border-radius:14px;border:non
       <label>Vigencia<input id="promoVig" type="date"></label>
       <label>Texto QR<input id="promoQR" placeholder="Presenta este QR para..."></label>
       <button class="btn" style="width:100%;margin-top:10px" onclick="addPromo()">Crear Promoción</button>
+      <div class="schedule-card"><b>Validar promoción por QR</b><input id="promoQrFile" type="file" accept="image/*" onchange="scanPromoQr(this)"><button class="btn btn2" style="width:100%;margin-top:8px" onclick="startQrScanner()">Abrir lector QR</button><video id="qrVideo" playsinline hidden></video><canvas id="qrCanvas" hidden></canvas><div id="qrScanResult" role="status" style="margin-top:8px;font-size:12px"></div></div>
       <div id="promoActivas" style="margin-top:12px"></div>
       <div class="ad-preview" id="adPreview" style="margin-top:12px"></div>
       <button class="btn btn2" style="width:100%;margin-top:8px" onclick="openAd()">Abrir Anuncio para Captura</button>
@@ -190,6 +204,7 @@ input,select,textarea{width:100%;padding:12px 14px;border-radius:14px;border:non
       <label>Instrucciones<textarea id="cfgInstr" placeholder="Enviar comprobante a WhatsApp" oninput="savePagos()"></textarea></label>
       <label><input type="checkbox" id="cfgShowBanco" checked onchange="savePagos()"> Mostrar datos bancarios en ticket</label>
       <label><input type="checkbox" id="cfgShowQR" checked onchange="savePagos()"> Mostrar QR pago/promo en ticket</label>
+      <label>Términos y condiciones de pedidos<textarea id="cfgTerms" rows="5" placeholder="Pedidos para eventos y domicilio sujetos a disponibilidad..." oninput="saveTerms()"></textarea></label>
       <div class="pagos-preview" id="pagosPreview"></div>
     </div>
 
@@ -254,7 +269,7 @@ let state={productos:[
   {id:'pollo',nombre:'Pollo kg',stock:10,min:3,costo:85,prov:'Pollería'},
   {id:'puerco',nombre:'Puerco kg',stock:8,min:2,costo:110,prov:'Carnicería'},
   {id:'queso',nombre:'Queso Oaxaca kg',stock:5,min:1,costo:120,prov:'Cremería'}
-],lotes:[],clientes:[],gastos:[],config:{nombre:'Los Cuates Tamales',wa:'528442252582',email:'loscuates.tamales@gmail.com',banco:'BBVA',clabe:'012180012345678901',cuenta:'1234567890',titular:'Jonathan G. Atondo',concepto:'Tamales Los Cuates',instr:'Enviar comprobante a WhatsApp',showBanco:true,showQR:true,logoCuates:'',logoJM:'',precioKm:30,horario:'07:00-12:00'}};
+],lotes:[],clientes:[],gastos:[],config:{nombre:'Los Cuates Tamales',wa:'528442252582',email:'loscuates.tamales@gmail.com',banco:'BBVA',clabe:'012180012345678901',cuenta:'1234567890',titular:'Jonathan G. Atondo',concepto:'Tamales Los Cuates',instr:'Enviar comprobante a WhatsApp',showBanco:true,showQR:true,logoCuates:'',logoJM:'',precioKm:30,horario:'07:00-12:00',terms:'Pedidos para eventos y domicilio sujetos a disponibilidad. Los pedidos programados deben confirmarse con anticipación.'},pedidoProgramado:null};
 
 state.folio='CUATES-PLAT-'+Math.floor(1000+Math.random()*9000);
 document.getElementById('folio').innerText='Folio: '+state.folio;
@@ -277,6 +292,8 @@ function loadAll(){
   document.getElementById('cfgInstr').value=state.config.instr;
   document.getElementById('cfgShowBanco').checked=state.config.showBanco;
   document.getElementById('cfgShowQR').checked=state.config.showQR;
+  document.getElementById('cfgTerms').value=state.config.terms||'';
+  document.getElementById('termsPreview').innerText=state.config.terms||'';
   renderMenu(); renderExtras(); renderPagos(); renderInv(); renderLotesSel(); renderGastos(); renderClientes(); renderDash(); renderPromo();
 }
 function saveAll(){ localStorage.setItem('cuates_v8', JSON.stringify(state)); }
@@ -320,6 +337,7 @@ function calc(){
     if(state.productos.find(p=>p.id===id)) totalTam+=cant;
   }
   let envio=state.km*state.config.precioKm;
+  validateSchedule();
   let promoDesc=0;
   // aplicar promo activa si hay
   let promoAct=state.promos.find(p=>p.activa!==false);
@@ -358,6 +376,8 @@ Concepto: ${state.config.concepto} ${state.folio}
 ${state.config.instr}\n\n`;
   }
   ticket+=`Contacto: WA ${state.config.wa} • ${state.config.email}\n`;
+  if(state.pedidoProgramado) ticket+=`PEDIDO PROGRAMADO: ${new Date(state.pedidoProgramado).toLocaleString()}\n`;
+  if(state.config.terms) ticket+=`\nTÉRMINOS: ${state.config.terms}\n`;
   if(promoAct) ticket+=`PROMO: ${promoAct.qr||promoAct.titulo} - Presenta QR\n`;
   document.getElementById('ticket').innerText=ticket;
   // QR
@@ -406,7 +426,8 @@ function openTicket(){
   w.document.close();
 }
 function guardarPedido(){
-  let pedido={folio:state.folio,items:{...state.carrito},total:document.getElementById('total').innerText,cliente:document.getElementById('nombreCliente').value,dir:document.getElementById('dir').value,fecha:new Date().toISOString(),pagos:{...state.config},estado:'pendiente'};
+  if(document.getElementById('tipoPedido').value==='programado'&&!validateSchedule()){ alert('Selecciona una fecha válida dentro de los próximos dos meses.'); return; }
+  let pedido={folio:state.folio,items:{...state.carrito},total:document.getElementById('total').innerText,cliente:document.getElementById('nombreCliente').value,dir:document.getElementById('dir').value,fecha:new Date().toISOString(),fechaProgramada:state.pedidoProgramado,pagos:{...state.config},terminos:state.config.terms,estado:'pendiente'};
   let hist=JSON.parse(localStorage.getItem('cuates_hist_v8')||'[]'); hist.unshift(pedido); localStorage.setItem('cuates_hist_v8',JSON.stringify(hist.slice(0,200)));
   // Firebase si conectado
   if(window.db){ import('firebase/firestore').then(({collection,addDoc})=>{ addDoc(collection(window.db,'pedidos'),pedido).then(()=>console.log('Pedido guardado Firebase')).catch(e=>console.error(e)); }); }
@@ -439,10 +460,11 @@ function tab(name){
 function renderProdAdmin(){
   let cont=document.getElementById('prodList'); cont.innerHTML='';
   state.productos.forEach((p,i)=>{
-    cont.innerHTML+=`<div style="background:var(--bg);box-shadow:var(--shadow-in);border-radius:12px;padding:10px;margin-top:8px"><label>Nombre<input value="${p.nombre}" onchange="editProd(${i},'nombre',this.value)"></label><label>Desc<input value="${p.desc}" onchange="editProd(${i},'desc',this.value)"></label><div style="display:flex;gap:8px"><label>Precio<input type=number value="${p.precio}" onchange="editProd(${i},'precio',parseFloat(this.value))"></label><label>Costo<input type=number value="${p.costo}" onchange="editProd(${i},'costo',parseFloat(this.value))"></label><label>Stock<input type=number value="${p.stock}" onchange="editProd(${i},'stock',parseInt(this.value))"></label></div></div>`;
+    cont.innerHTML+=`<div style="background:var(--bg);box-shadow:var(--shadow-in);border-radius:12px;padding:10px;margin-top:8px"><label>Nombre<input value="${p.nombre}" onchange="editProd(${i},'nombre',this.value)"></label><label>Desc<input value="${p.desc}" onchange="editProd(${i},'desc',this.value)"></label><div style="display:flex;gap:8px"><label>Precio<input type=number value="${p.precio}" onchange="editProd(${i},'precio',parseFloat(this.value))"></label><label>Costo<input type=number value="${p.costo}" onchange="editProd(${i},'costo',parseFloat(this.value))"></label><label>Stock<input type=number value="${p.stock}" onchange="editProd(${i},'stock',parseInt(this.value))"></label></div><button class="btn danger-btn" style="margin-top:8px;width:100%" onclick="deleteProd(${i})">Eliminar producto</button></div>`;
   });
 }
 function editProd(i,k,v){ state.productos[i][k]=v; saveAll(); renderMenu(); calc(); }
+function deleteProd(i){ if(!confirm('¿Eliminar este producto?')) return; let id=state.productos[i].id; state.productos.splice(i,1); delete state.carrito[id]; saveAll(); renderProdAdmin(); renderMenu(); renderLotesSel(); calc(); }
 function addProd(){ state.productos.push({id:'p'+Date.now(),nombre:'Nuevo Tamal Hoja Plátano',desc:'Descripción',precio:50,costo:20,stock:20,emoji:'🫔'}); saveAll(); renderProdAdmin(); renderMenu(); renderLotesSel(); }
 
 function saveMarca(){
@@ -463,6 +485,11 @@ function uploadLogo(input,tipo){
   }; reader.readAsDataURL(file);
 }
 
+function toggleSchedule(){ let enabled=document.getElementById('tipoPedido').value==='programado'; document.getElementById('scheduleFields').hidden=!enabled; if(enabled){ let input=document.getElementById('fechaPedido'); let now=new Date(); now.setMinutes(now.getMinutes()-now.getTimezoneOffset()); input.min=now.toISOString().slice(0,16); let max=new Date(); max.setMonth(max.getMonth()+2); max.setMinutes(max.getMinutes()-max.getTimezoneOffset()); input.max=max.toISOString().slice(0,16); } validateSchedule(); calc(); }
+function validateSchedule(){ let input=document.getElementById('fechaPedido'); if(document.getElementById('tipoPedido').value!=='programado'){ state.pedidoProgramado=null; return true; } let value=new Date(input.value); let max=new Date(); max.setMonth(max.getMonth()+2); let valid=input.value && value>=new Date() && value<=max; document.getElementById('scheduleHint').innerText=valid?'Fecha válida.':'Selecciona una fecha dentro de los próximos dos meses.'; state.pedidoProgramado=valid?input.value:null; return valid; }
+function saveTerms(){ state.config.terms=document.getElementById('cfgTerms').value; document.getElementById('termsPreview').innerText=state.config.terms; saveAll(); }
+function scanPromoQr(input){ let file=input.files[0]; if(!file||typeof jsQR!=='function') return; let img=new Image(); img.onload=()=>{ let c=document.createElement('canvas'); c.width=img.width; c.height=img.height; let ctx=c.getContext('2d'); ctx.drawImage(img,0,0); let result=jsQR(ctx.getImageData(0,0,c.width,c.height).data,c.width,c.height); document.getElementById('qrScanResult').innerText=result?'QR leído: '+result.data:'No se encontró un QR válido.'; }; img.src=URL.createObjectURL(file); }
+async function startQrScanner(){ let video=document.getElementById('qrVideo'); if(!navigator.mediaDevices) return document.getElementById('qrScanResult').innerText='La cámara no está disponible en este dispositivo.'; video.hidden=false; video.srcObject=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); await video.play(); let canvas=document.getElementById('qrCanvas'),ctx=canvas.getContext('2d'); let scan=()=>{ if(video.readyState<2) return requestAnimationFrame(scan); canvas.width=video.videoWidth; canvas.height=video.videoHeight; ctx.drawImage(video,0,0); let result=jsQR(ctx.getImageData(0,0,canvas.width,canvas.height).data,canvas.width,canvas.height); if(result){ document.getElementById('qrScanResult').innerText='QR validado: '+result.data; video.srcObject.getTracks().forEach(t=>t.stop()); video.hidden=true; } else requestAnimationFrame(scan); }; scan(); }
 function savePagos(){
   state.config.wa=document.getElementById('cfgWA').value||state.config.wa;
   state.config.email=document.getElementById('cfgEmail').value||state.config.email;
@@ -488,7 +515,7 @@ function addPromo(){
 }
 function renderPromo(){
   let cont=document.getElementById('promoActivas'); if(!cont) return;
-  cont.innerHTML=state.promos.map(p=>`<div style="background:var(--bg);box-shadow:var(--shadow-in);border-radius:12px;padding:10px;margin-top:8px;display:flex;justify-content:space-between"><span><b>${p.titulo}</b> ${p.tipo} ${p.valor?'- '+p.valor:''} <br><small>${p.vig} • ${p.qr}</small></span><button onclick="togglePromo(${p.id})" style="border:none;background:var(--terra);color:#fff;border-radius:8px;padding:6px 10px">${p.activa!==false?'Desactivar':'Activar'}</button></div>`).join('');
+  cont.innerHTML=state.promos.map(p=>`<div style="background:var(--bg);box-shadow:var(--shadow-in);border-radius:12px;padding:10px;margin-top:8px;display:flex;justify-content:space-between"><span><b>${p.titulo}</b> ${p.tipo} ${p.valor?'- '+p.valor:''} <br><small>${p.vig} • ${p.qr}</small></span><span style="display:flex;gap:6px"><button onclick="togglePromo(${p.id})" style="border:none;background:var(--terra);color:#fff;border-radius:8px;padding:6px 10px">${p.activa!==false?'Desactivar':'Activar'}</button><button onclick="deletePromo(${p.id})" class="danger-btn" style="border:none;color:#fff;border-radius:8px;padding:6px 10px">Eliminar</button></span></div>`).join('');
   let activa=state.promos.find(p=>p.activa!==false);
   document.getElementById('promoBanner').style.display=activa?'block':'none';
   if(activa) document.getElementById('promoBanner').innerText=activa.titulo+' • '+activa.qr;
@@ -496,6 +523,7 @@ function renderPromo(){
   let ad=document.getElementById('adPreview'); if(ad && activa){ ad.innerHTML=`<div style="width:100%;height:100%;background:#f8f5ee;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;text-align:center"><img src="${document.getElementById('headerLogo').src}" style="width:60px;border-radius:50%"><div style="font-weight:900;font-size:18px;margin-top:8px">${activa.titulo}</div><div style="font-size:24px">🫔🍃</div><div style="font-size:11px">Hoja Plátano Premium</div><div style="margin-top:6px;font-size:10px;opacity:.7">${state.config.nombre} • ${activa.qr}</div></div>`; }
 }
 function togglePromo(id){ let p=state.promos.find(x=>x.id===id); if(p) p.activa=!p.activa; saveAll(); renderPromo(); calc(); }
+function deletePromo(id){ if(!confirm('¿Eliminar esta promoción?')) return; state.promos=state.promos.filter(p=>p.id!==id); saveAll(); renderPromo(); calc(); }
 function openAd(){
   let content=document.getElementById('adPreview').innerHTML;
   let w=window.open('','_blank','width=1080,height=1920');
