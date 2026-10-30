@@ -232,13 +232,13 @@ input,select,textarea{width:100%;padding:12px 14px;border-radius:14px;border:non
     </div>
 
     <div id="pane-fb" style="display:none">
-      <h4>🔥 Firebase - Pedidos Reales</h4>
-      <p style="font-size:12px;opacity:.7">Pega tu firebaseConfig para que los pedidos se guarden de verdad. Si no, funciona offline en localStorage.</p>
-      <textarea id="fbConfig" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}' style="height:120px"></textarea>
-      <button class="btn" style="width:100%;margin-top:8px" onclick="conectarFirebase()">Conectar Firebase</button>
+      <h4>Base de datos Neon - Pedidos y clientes reales</h4>
+      <p style="font-size:12px;opacity:.7">La app guarda pedidos, clientes y configuración de contacto en Neon. El modo offline queda como respaldo local.</p>
+      <div id="fbConfig" style="padding:12px;background:var(--bg);box-shadow:var(--shadow-in);border-radius:12px;font-size:12px">Conexión administrada por el proyecto. No pegues credenciales en el navegador.</div>
+      <button class="btn" style="width:100%;margin-top:8px" onclick="probarNeon()">Comprobar conexión Neon</button>
       <div id="fbStatus" style="margin-top:10px;font-size:12px;background:var(--bg);box-shadow:var(--shadow-in);padding:10px;border-radius:12px"></div>
       <button class="btn btn2" style="width:100%;margin-top:8px" onclick="probarFirebase()">Probar Guardado Pedido</button>
-      <small style="opacity:.6">1. Crea proyecto en console.firebase.google.com<br>2. Habilita Firestore Database<br>3. Copia config de Project Settings > General > Your apps<br>4. Pégalo aquí</small>
+      <small style="opacity:.6">Los datos se almacenan en Neon mediante endpoints protegidos del proyecto. La configuración de contacto y transferencias se edita desde Pagos/contacto.</small>
     </div>
 
   </div>
@@ -296,7 +296,9 @@ function loadAll(){
   document.getElementById('termsPreview').innerText=state.config.terms||'';
   renderMenu(); renderExtras(); renderPagos(); renderInv(); renderLotesSel(); renderGastos(); renderClientes(); renderDash(); renderPromo();
 }
-function saveAll(){ localStorage.setItem('cuates_v8', JSON.stringify(state)); }
+function saveAll(){ localStorage.setItem('cuates_v8', JSON.stringify(state)); fetch('/api/settings',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({contact:state.config})}).catch(()=>{}); }
+async function hydrateNeon(){ try{ let r=await fetch('/api/settings'); if(!r.ok)return; let remote=await r.json(); if(remote.contact){ state.config={...state.config,...remote.contact}; localStorage.setItem('cuates_v8',JSON.stringify(state)); loadAll(); } }catch(e){} }
+async function probarNeon(){ try{ let r=await fetch('/api/settings'); if(!r.ok)throw new Error(); document.getElementById('fbStatus').innerText='Conectado a Neon: configuración y clientes listos'; }catch(e){ document.getElementById('fbStatus').innerText='Neon aún no responde; se mantiene respaldo offline.'; } }
 
 function renderMenu(){
   let cont=document.getElementById('menu'); cont.innerHTML='';
@@ -429,8 +431,7 @@ function guardarPedido(){
   if(document.getElementById('tipoPedido').value==='programado'&&!validateSchedule()){ alert('Selecciona una fecha válida dentro de los próximos dos meses.'); return; }
   let pedido={folio:state.folio,items:{...state.carrito},total:document.getElementById('total').innerText,cliente:document.getElementById('nombreCliente').value,dir:document.getElementById('dir').value,fecha:new Date().toISOString(),fechaProgramada:state.pedidoProgramado,pagos:{...state.config},terminos:state.config.terms,estado:'pendiente'};
   let hist=JSON.parse(localStorage.getItem('cuates_hist_v8')||'[]'); hist.unshift(pedido); localStorage.setItem('cuates_hist_v8',JSON.stringify(hist.slice(0,200)));
-  // Firebase si conectado
-  if(window.db){ import('firebase/firestore').then(({collection,addDoc})=>{ addDoc(collection(window.db,'pedidos'),pedido).then(()=>console.log('Pedido guardado Firebase')).catch(e=>console.error(e)); }); }
+  fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pedido)}).then(r=>{if(!r.ok) throw new Error('Neon no disponible'); return r.json()}).then(()=>document.getElementById('fbStatus').innerText='Pedido guardado en Neon').catch(()=>{});
   state.folio='CUATES-PLAT-'+Math.floor(1000+Math.random()*9000); document.getElementById('folio').innerText='Folio: '+state.folio;
   renderDash();
 }
@@ -632,7 +633,7 @@ function probarFirebase(){
 }
 
 // Init
-loadAll(); calc(); initAdminTrigger(); setInterval(renderLotes,60000);
+loadAll(); hydrateNeon(); calc(); initAdminTrigger(); setInterval(renderLotes,60000);
 let fbSaved=localStorage.getItem('cuates_fb'); if(fbSaved){ document.getElementById('fbConfig').value=fbSaved; }
 
 // Mapa

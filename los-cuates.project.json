@@ -13,6 +13,6 @@
     "letterheadTicket": { "enabled": true, "watermarkOpacity": 0.2, "brand": "Los Cuates" }
   },
   "adminAccess": { "trigger": "footer-logo", "passwordConfigured": true },
-  "storage": { "clientState": "localStorage", "firestoreOptional": true },
+  "storage": { "primary": "Neon Postgres", "tables": ["app_customers", "app_orders", "app_settings"], "offlineFallback": "localStorage" },
   "branding": { "primary": "terracotta", "secondary": "banana-green", "accent": "maize", "style": "contemporary-mexican-minimarket" }
 }
