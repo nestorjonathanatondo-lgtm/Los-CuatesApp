@@ -268,8 +268,9 @@ function loadAll(){
   document.getElementById('nombreNegocio').innerText=state.config.nombre;
   document.getElementById('cfgNombre')&&(document.getElementById('cfgNombre').value=state.config.nombre);
   let colors=state.config.colors||{}; let texts=state.config.texts||{};
-  document.getElementById('cfgHeroTitle').value=texts.heroTitle||'LOS CUATES'; document.getElementById('cfgHeroSubtitle').value=texts.heroSubtitle||''; document.getElementById('cfgDeliveryTitle').value=texts.deliveryTitle||'📍 Entrega y Pago'; document.getElementById('cfgExtrasTitle').value=texts.extrasTitle||'☕ Extras';
-  document.getElementById('cfgColorTerra').value=colors.terra||'#D86A3A'; document.getElementById('cfgColorAzul').value=colors.azul||'#1e3a5f'; document.getElementById('cfgColorMaiz').value=colors.maiz||'#E8C36A'; applyVisualConfig();
+  const setConfigField=(id,value)=>{ const field=document.getElementById(id); if(field) field.value=value; };
+  setConfigField('cfgHeroTitle',texts.heroTitle||'LOS CUATES'); setConfigField('cfgHeroSubtitle',texts.heroSubtitle||''); setConfigField('cfgDeliveryTitle',texts.deliveryTitle||'📍 Entrega y Pago'); setConfigField('cfgExtrasTitle',texts.extrasTitle||'☕ Extras');
+  setConfigField('cfgColorTerra',colors.terra||'#D86A3A'); setConfigField('cfgColorAzul',colors.azul||'#1e3a5f'); setConfigField('cfgColorMaiz',colors.maiz||'#E8C36A'); applyVisualConfig();
   // pagos
   document.getElementById('cfgWA').value=state.config.wa;
   document.getElementById('cfgEmail').value=state.config.email;
