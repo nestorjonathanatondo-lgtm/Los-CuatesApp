@@ -284,7 +284,7 @@ function loadAll(){
   document.getElementById('cfgShowQR').checked=state.config.showQR;
   document.getElementById('cfgTerms').value=state.config.terms||'';
   document.getElementById('termsPreview').innerText=state.config.terms||'';
-  renderMenu(); renderExtras(); renderPagos(); renderInv(); renderLotesSel(); renderGastos(); renderClientes(); renderDash(); renderPromo();
+  renderMenu(); renderExtras(); renderPagos(); renderInv(); renderLotesSel(); renderGastos(); renderClientes(); renderDash(); renderPromo(); applyBrandLogo();
 }
 function saveAll(){ localStorage.setItem('cuates_v8', JSON.stringify(state)); fetch('/api/settings',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({contact:state.config})}).catch(()=>{}); }
 async function hydrateNeon(){ try{ let r=await fetch('/api/settings'); if(!r.ok)return; let remote=await r.json(); if(remote.contact){ state.config={...state.config,...remote.contact}; localStorage.setItem('cuates_v8',JSON.stringify(state)); loadAll(); applyBrandLogo(); } }catch(e){} }
