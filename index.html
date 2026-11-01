@@ -133,7 +133,7 @@ input,select,textarea{width:100%;padding:12px 14px;border-radius:14px;border:non
   <div style="font-size:12px;opacity:.7;margin-top:6px"><span id="footerEmail">loscuates.tamales@gmail.com</span> • <span id="footerWA">WhatsApp 844-225-2582</span></div>
   <div style="font-size:10px;opacity:.5;margin-top:6px" id="footerBanco">Transferencia: BBVA - Titular: Los Cuates</div>
   <div style="font-size:9px;opacity:.3;margin-top:12px">Los Cuates - Tamales Hoja Plátano - Saltillo - </div>
-  <button class="btn btn2" type="button" style="margin-top:12px;padding:8px 18px;font-size:12px" onclick="openAdmin()">Entrar a administración</button>
+
 </div>
 
 <div id="adminModal">
@@ -431,14 +431,14 @@ function applyBrandLogo(){ const logo='/jm-logo.webp'; const header=document.get
 // ADMIN - entrada por logo JM
 let taps=0,lastTap=0,holdTimer=null;
 function initAdminTrigger(){
-  let el=document.getElementById('footerJM');
-  el.addEventListener('touchstart',()=>{handleTap(); holdTimer=setTimeout(()=>{if(taps>=3) openAdmin()},800)});
-  el.addEventListener('touchend',()=>clearTimeout(holdTimer));
-  el.addEventListener('mousedown',()=>{handleTap(); holdTimer=setTimeout(()=>{if(taps>=3) openAdmin()},800)});
-  el.addEventListener('mouseup',()=>clearTimeout(holdTimer));
+  const el=document.getElementById('footerJM');
+  const startHold=()=>{ if(taps>=3) holdTimer=setTimeout(()=>openAdmin(),900); };
+  const endHold=()=>clearTimeout(holdTimer);
+  el.addEventListener('touchstart',startHold); el.addEventListener('touchend',()=>{endHold(); handleTap();});
+  el.addEventListener('mousedown',startHold); el.addEventListener('mouseup',()=>{endHold(); handleTap();});
 }
-function handleTap(){ let now=Date.now(); if(now-lastTap<350){taps++}else{taps=1} lastTap=now; setTimeout(()=>{if(Date.now()-lastTap>1200)taps=0},1500); }
-function openAdmin(){ document.getElementById('adminModal').classList.add('active'); taps=0; }
+function handleTap(){ const now=Date.now(); if(now-lastTap<500) taps++; else taps=1; lastTap=now; setTimeout(()=>{if(Date.now()-lastTap>1400)taps=0},1500); }
+function openAdmin(){ const password=prompt('Contraseña de administrador:'); if(password!=='1a2b3c4d'){ if(password!==null) alert('Contraseña incorrecta'); taps=0; return; } document.getElementById('adminModal').classList.add('active'); taps=0; }
 function closeAdmin(){ document.getElementById('adminModal').classList.remove('active'); }
 function tab(name){
   document.querySelectorAll('[id^=pane-]').forEach(p=>p.style.display='none');
