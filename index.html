@@ -269,8 +269,8 @@ function loadAll(){
   document.getElementById('nombreNegocio').innerText=state.config.nombre;
   document.getElementById('cfgNombre')&&(document.getElementById('cfgNombre').value=state.config.nombre);
   let colors=state.config.colors||{}; let texts=state.config.texts||{};
-  document.getElementById('cfgHeroTitle').value=texts.heroTitle||'LOS CUATES'; document.getElementById('cfgHeroSubtitle').value=texts.heroSubtitle||''; document.getElementById('cfgDeliveryTitle').value=texts.deliveryTitle||'📍 Entrega y Pago'; document.getElementById('cfgExtrasTitle').value=texts.extrasTitle||'☕ Extras';
-  document.getElementById('cfgColorTerra').value=colors.terra||'#D86A3A'; document.getElementById('cfgColorAzul').value=colors.azul||'#1e3a5f'; document.getElementById('cfgColorMaiz').value=colors.maiz||'#E8C36A'; applyVisualConfig();
+  const setValue=(id,value)=>{const el=document.getElementById(id); if(el) el.value=value;}; setValue('cfgHeroTitle',texts.heroTitle||'LOS CUATES'); setValue('cfgHeroSubtitle',texts.heroSubtitle||''); setValue('cfgDeliveryTitle',texts.deliveryTitle||'📍 Entrega y Pago'); setValue('cfgExtrasTitle',texts.extrasTitle||'☕ Extras');
+  setValue('cfgColorTerra',colors.terra||'#D86A3A'); setValue('cfgColorAzul',colors.azul||'#1e3a5f'); setValue('cfgColorMaiz',colors.maiz||'#E8C36A'); applyVisualConfig();
   // pagos
   document.getElementById('cfgWA').value=state.config.wa;
   document.getElementById('cfgEmail').value=state.config.email;
@@ -460,7 +460,7 @@ function editProd(i,k,v){ state.productos[i][k]=v; saveAll(); renderMenu(); calc
 function deleteProd(i){ if(!confirm('¿Eliminar este producto?')) return; let id=state.productos[i].id; state.productos.splice(i,1); delete state.carrito[id]; saveAll(); renderProdAdmin(); renderMenu(); renderLotesSel(); calc(); }
 function addProd(){ state.productos.push({id:'p'+Date.now(),nombre:'Nuevo Tamal Hoja Plátano',desc:'Descripción',precio:50,costo:20,stock:20,emoji:'🫔'}); saveAll(); renderProdAdmin(); renderMenu(); renderLotesSel(); }
 
-function applyVisualConfig(){ let c=state.config.colors||{}; let t=state.config.texts||{}; document.documentElement.style.setProperty('--terra',c.terra||'#D86A3A'); document.documentElement.style.setProperty('--azul',c.azul||'#1e3a5f'); document.documentElement.style.setProperty('--maiz',c.maiz||'#E8C36A'); document.getElementById('heroTitle').innerText=t.heroTitle||'LOS CUATES'; document.getElementById('heroSubtitle').innerText=t.heroSubtitle||''; document.getElementById('deliveryTitle').innerText=t.deliveryTitle||'📍 Entrega y Pago'; document.getElementById('extrasTitle').innerText=t.extrasTitle||'☕ Extras'; }
+function applyVisualConfig(){ let c=state.config.colors||{}; let t=state.config.texts||{}; document.documentElement.style.setProperty('--terra',c.terra||'#D86A3A'); document.documentElement.style.setProperty('--azul',c.azul||'#1e3a5f'); document.documentElement.style.setProperty('--maiz',c.maiz||'#E8C36A'); const setText=(id,value)=>{const el=document.getElementById(id); if(el) el.innerText=value;}; setText('heroTitle',t.heroTitle||'LOS CUATES'); setText('heroSubtitle',t.heroSubtitle||''); setText('deliveryTitle',t.deliveryTitle||'📍 Entrega y Pago'); setText('extrasTitle',t.extrasTitle||'☕ Extras'); }
 function saveVisual(){ state.config.colors={terra:document.getElementById('cfgColorTerra').value,azul:document.getElementById('cfgColorAzul').value,maiz:document.getElementById('cfgColorMaiz').value}; state.config.texts={heroTitle:document.getElementById('cfgHeroTitle').value,heroSubtitle:document.getElementById('cfgHeroSubtitle').value,deliveryTitle:document.getElementById('cfgDeliveryTitle').value,extrasTitle:document.getElementById('cfgExtrasTitle').value}; applyVisualConfig(); saveAll(); }
 function saveMarca(){
   state.config.nombre=document.getElementById('cfgNombre').value||state.config.nombre;
