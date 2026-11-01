@@ -438,7 +438,7 @@ function initAdminTrigger(){
   el.addEventListener('mouseup',()=>clearTimeout(holdTimer));
 }
 function handleTap(){ let now=Date.now(); if(now-lastTap<350){taps++}else{taps=1} lastTap=now; setTimeout(()=>{if(Date.now()-lastTap>1200)taps=0},1500); }
-function openAdmin(){ let pw=prompt('Password admin:'); if(pw!=='1a2b3c4d'){alert('Incorrecto');taps=0;return;} document.getElementById('adminModal').classList.add('active'); taps=0; }
+function openAdmin(){ document.getElementById('adminModal').classList.add('active'); taps=0; }
 function closeAdmin(){ document.getElementById('adminModal').classList.remove('active'); }
 function tab(name){
   document.querySelectorAll('[id^=pane-]').forEach(p=>p.style.display='none');
@@ -467,15 +467,15 @@ function saveMarca(){
   let urlC=document.getElementById('cfgLogoCuatesUrl').value; if(urlC) state.config.logoCuates=urlC;
   let urlJ=document.getElementById('cfgLogoJMUrl').value; if(urlJ) state.config.logoJM=urlJ;
   document.getElementById('nombreNegocio').innerText=state.config.nombre;
-  if(state.config.logoCuates){ document.getElementById('headerLogo').src=state.config.logoCuates; document.getElementById('splashLogoCuates').src=state.config.logoCuates; document.getElementById('prevCuates').src=state.config.logoCuates; }
-  if(state.config.logoJM){ document.getElementById('footerJM').src=state.config.logoJM; document.getElementById('splashLogoJM').src=state.config.logoJM; document.getElementById('prevJM').src=state.config.logoJM; }
+  if(state.config.logoCuates){ document.getElementById('headerLogo').src=state.config.logoCuates; document.getElementById('prevCuates').src=state.config.logoCuates; }
+  if(state.config.logoJM){ document.getElementById('footerJM').src=state.config.logoJM; document.getElementById('prevJM').src=state.config.logoJM; }
   saveAll();
 }
 function uploadLogo(input,tipo){
   let file=input.files[0]; if(!file) return;
   let reader=new FileReader(); reader.onload=e=>{
-    if(tipo==='cuates'){ state.config.logoCuates=e.target.result; document.getElementById('headerLogo').src=e.target.result; document.getElementById('splashLogoCuates').src=e.target.result; document.getElementById('prevCuates').src=e.target.result; }
-    else{ state.config.logoJM=e.target.result; document.getElementById('footerJM').src=e.target.result; document.getElementById('splashLogoJM').src=e.target.result; document.getElementById('prevJM').src=e.target.result; }
+    if(tipo==='cuates'){ state.config.logoCuates=e.target.result; document.getElementById('headerLogo').src=e.target.result; document.getElementById('prevCuates').src=e.target.result; }
+    else{ state.config.logoJM=e.target.result; document.getElementById('footerJM').src=e.target.result; document.getElementById('prevJM').src=e.target.result; }
     saveAll();
   }; reader.readAsDataURL(file);
 }
