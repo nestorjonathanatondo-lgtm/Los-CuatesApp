@@ -132,7 +132,8 @@ input,select,textarea{width:100%;padding:12px 14px;border-radius:14px;border:non
   <div style="margin-top:10px;font-weight:800">Hecho con ❤️ por JM Design</div>
   <div style="font-size:12px;opacity:.7;margin-top:6px"><span id="footerEmail">loscuates.tamales@gmail.com</span> • <span id="footerWA">WhatsApp 844-225-2582</span></div>
   <div style="font-size:10px;opacity:.5;margin-top:6px" id="footerBanco">Transferencia: BBVA - Titular: Los Cuates</div>
-  <div style="font-size:9px;opacity:.3;margin-top:12px">Los Cuates - Tamales Hoja Plátano - Saltillo - Toca logo JM 3x + largo para Admin (1a2b3c4d)</div>
+  <div style="font-size:9px;opacity:.3;margin-top:12px">Los Cuates - Tamales Hoja Plátano - Saltillo - </div>
+  <button class="btn btn2" type="button" style="margin-top:12px;padding:8px 18px;font-size:12px" onclick="openAdmin()">Entrar a administración</button>
 </div>
 
 <div id="adminModal">
@@ -286,7 +287,7 @@ function loadAll(){
   renderMenu(); renderExtras(); renderPagos(); renderInv(); renderLotesSel(); renderGastos(); renderClientes(); renderDash(); renderPromo();
 }
 function saveAll(){ localStorage.setItem('cuates_v8', JSON.stringify(state)); fetch('/api/settings',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({contact:state.config})}).catch(()=>{}); }
-async function hydrateNeon(){ try{ let r=await fetch('/api/settings'); if(!r.ok)return; let remote=await r.json(); if(remote.contact){ state.config={...state.config,...remote.contact}; localStorage.setItem('cuates_v8',JSON.stringify(state)); loadAll(); } }catch(e){} }
+async function hydrateNeon(){ try{ let r=await fetch('/api/settings'); if(!r.ok)return; let remote=await r.json(); if(remote.contact){ state.config={...state.config,...remote.contact}; localStorage.setItem('cuates_v8',JSON.stringify(state)); loadAll(); applyBrandLogo(); } }catch(e){} }
 async function probarNeon(){ try{ let r=await fetch('/api/settings'); if(!r.ok)throw new Error(); document.getElementById('fbStatus').innerText='Conectado a Neon: configuración y clientes listos'; }catch(e){ document.getElementById('fbStatus').innerText='Neon aún no responde; se mantiene respaldo offline.'; } }
 
 function renderMenu(){
@@ -424,6 +425,8 @@ function guardarPedido(){
   state.folio='CUATES-PLAT-'+Math.floor(1000+Math.random()*9000); document.getElementById('folio').innerText='Folio: '+state.folio;
   renderDash();
 }
+
+function applyBrandLogo(){ const logo='/jm-logo.webp'; const header=document.getElementById('headerLogo'); const footer=document.getElementById('footerJM'); if(header) header.src=logo; if(footer) footer.src=logo; }
 
 // ADMIN - entrada por logo JM
 let taps=0,lastTap=0,holdTimer=null;
@@ -603,7 +606,7 @@ function renderDash(){
 }
 
 // Init
-loadAll(); hydrateNeon(); calc(); initAdminTrigger(); setInterval(renderLotes,60000);
+loadAll(); applyBrandLogo(); hydrateNeon(); setTimeout(applyBrandLogo,1200); calc(); initAdminTrigger(); setInterval(renderLotes,60000);
 let fbSaved=localStorage.getItem('cuates_fb'); if(fbSaved){ document.getElementById('fbConfig').value=fbSaved; }
 
 // Mapa
