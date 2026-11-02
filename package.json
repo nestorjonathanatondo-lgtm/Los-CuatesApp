@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "npx serve . -l 3000",
-    "start": "npx serve .",
+    "start": "npx serve dist -l 3000",
+    "build": "node scripts/build-web.mjs",
     "build:web": "node scripts/build-web.mjs",
+    "preview": "npx serve dist -l 4173",
     "cap:add:android": "npx cap add android",
     "cap:add:ios": "npx cap add ios",
     "cap:sync": "npx cap sync",
