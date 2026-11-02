@@ -1,8 +1,8 @@
 window.LOS_CUATES_FIREBASE_CONFIG = window.LOS_CUATES_FIREBASE_CONFIG || {
-  apiKey: 'YOUR_API_KEY',
-  authDomain: 'YOUR_PROJECT.firebaseapp.com',
-  projectId: 'YOUR_PROJECT_ID',
-  storageBucket: 'YOUR_PROJECT.appspot.com',
-  messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-  appId: 'YOUR_APP_ID'
+  apiKey: "AIzaSyAiSTbVdWROpg_S00O6o8l-xoWw26X7wHo",
+  authDomain: "los-cuatesapp.firebaseapp.com",
+  projectId: "los-cuatesapp",
+  storageBucket: "los-cuatesapp.firebasestorage.app",
+  messagingSenderId: "951809994518",
+  appId: "1:951809994518:web:604b7e63f3cb53de84ea37"
 };
