@@ -11,6 +11,6 @@
   "orientation": "portrait-primary",
   "categories": ["food", "shopping"],
   "icons": [
-    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    { "src": "/logos/los-cuates.webp", "sizes": "1600x1600", "type": "image/webp", "purpose": "any" }
   ]
 }
