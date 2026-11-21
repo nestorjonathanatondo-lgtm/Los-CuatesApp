@@ -1,5 +1,5 @@
-const CACHE = 'los-cuates-v1'
-const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icon.svg']
+const CACHE = 'los-cuates-v2'
+const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest', '/logos/los-cuates.webp']
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(APP_SHELL)))
